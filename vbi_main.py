@@ -12,7 +12,7 @@ class PollWorker(QThread):
     data_signal = pyqtSignal(list)
     error_signal = pyqtSignal(str)
     
-    def __init__(self, client, start_addr=0, qty=26):
+    def __init__(self, client, start_addr=0, qty=9):
         super().__init__()
         self.client = client
         self.start_addr = start_addr
@@ -298,31 +298,30 @@ class VBIMainApp(QMainWindow):
         self.lbl_exec.setStyleSheet("background-color: #666666; color: orange; border: 1px solid white; padding: 5px;")
 
     def update_ui_values(self, registers):
-        if not registers or len(registers) < 26: return
+        if not registers or len(registers) < 9: return
         self.status_bar.showMessage("Recebendo dados...")
         
-        # Hreg[21] = Ponto Decimais da Vazao
-        decimals = registers[21]
+        # Ponto Decimais não é mais enviado - assumimos 0 para Vazão/Total, e 2 para velocidade
+        decimals = 0
         
-        # Vazão
+        # Vazão (Registers 0,1)
         val_vazao = self.format_value(registers[0], registers[1], decimals)
         self.lbl_vazao.setText(val_vazao)
         
-        # Totalizador Parcial
-        val_parcial = self.format_value(registers[8], registers[9], decimals)
+        # Totalizador Parcial (Registers 4,5)
+        val_parcial = self.format_value(registers[4], registers[5], decimals)
         self.lbl_parcial.setText(val_parcial)
         
-        # Totalizador Geral
-        val_geral = self.format_value(registers[10], registers[11], decimals)
+        # Totalizador Geral (Registers 6,7)
+        val_geral = self.format_value(registers[6], registers[7], decimals)
         self.lbl_geral.setText(val_geral)
         
-        # Velocidade (Fixed 2 decimals)
-        val_vel = self.format_value(registers[4], registers[5], 2)
+        # Velocidade (Registers 2,3 - Fixado em 2 casas)
+        val_vel = self.format_value(registers[2], registers[3], 2)
         self.lbl_velocidade.setText(val_vel)
         
-        # Status Execucao (Hreg[17] bit 0)
-        # Hreg[17] = (int16_t)(Calib.lHabilitaBalanca2<<2 | Oper.bExecucao2<<1 | Oper.bExecucao)
-        status_word = registers[17]
+        # Status Execucao (Hreg[8] bit 0)
+        status_word = registers[8]
         is_executing = (status_word & 1) != 0
         if is_executing:
             self.lbl_exec.setText("Executando")
