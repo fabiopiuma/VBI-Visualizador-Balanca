@@ -301,8 +301,8 @@ class VBIMainApp(QMainWindow):
         if not registers or len(registers) < 9: return
         self.status_bar.showMessage("Recebendo dados...")
         
-        # Ponto Decimais não é mais enviado - assumimos 0 para Vazão/Total, e 2 para velocidade
-        decimals = 0
+        # Ponto Decimais fixado em 2 para Vazão, Totalizadores e Velocidade
+        decimals = 2
         
         # Vazão (Registers 0,1)
         val_vazao = self.format_value(registers[0], registers[1], decimals)
